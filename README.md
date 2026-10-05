@@ -11,3 +11,6 @@ Start by running `npm install` inside the project folder
 `npm run eslint` to run eslint
 `npm run build` to make a production build
 `npm run start-prod` to run your production build
+
+## Live Demo
+Check out the deployed Pokedex application here: https://fullstack-open-part11-pokedex.onrender.com
