@@ -1,4 +1,4 @@
-const { TextEncoder, TextDecoder } = require('util')
+const { TextEncoder, TextDecoder } = require("util");
 
-globalThis.TextEncoder = TextEncoder
-globalThis.TextDecoder = TextDecoder
+globalThis.TextEncoder = TextEncoder;
+globalThis.TextDecoder = TextDecoder;
