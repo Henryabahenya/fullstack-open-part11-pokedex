@@ -28,3 +28,6 @@ jobs:
         run: npm run test:e2e
       - name: Build
         run: npm run build
+      - name: Deploy to Render
+        if: ${{ github.event_name == 'push' }}
+        run: echo "Deploying to Render..."
