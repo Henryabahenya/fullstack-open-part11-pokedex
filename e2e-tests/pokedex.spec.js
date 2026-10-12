@@ -1,22 +1,22 @@
-const { test, expect } = require("@playwright/test");
+const { test, expect } = require('@playwright/test')
 
-test("front page shows ivysaur and Nintendo disclaimer", async ({ page }) => {
-  await page.goto("/");
+test('front page shows ivysaur and Nintendo disclaimer', async ({ page }) => {
+  await page.goto('/')
 
-  await expect(page.getByText("ivysaur")).toBeVisible();
+  await expect(page.getByText('ivysaur')).toBeVisible()
   await expect(
     page.getByText(
       /Pokémon and Pokémon character names are trademarks of Nintendo\./i,
     ),
-  ).toBeVisible();
-});
+  ).toBeVisible()
+})
 
-test("can navigate from list to a pokemon page and see chlorophyll", async ({
+test('can navigate from list to a pokemon page and see chlorophyll', async ({
   page,
 }) => {
-  await page.goto("/");
+  await page.goto('/')
 
-  await page.getByRole("link", { name: "ivysaur" }).click();
+  await page.getByRole('link', { name: 'ivysaur' }).click()
 
-  await expect(page.getByText("chlorophyll")).toBeVisible();
-});
+  await expect(page.getByText('chlorophyll')).toBeVisible()
+})
