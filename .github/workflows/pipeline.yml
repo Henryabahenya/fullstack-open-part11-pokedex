@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+    # Run checks for pull requests targeting the main branch
     branches: [main]
     types: [opened, synchronize]
 
