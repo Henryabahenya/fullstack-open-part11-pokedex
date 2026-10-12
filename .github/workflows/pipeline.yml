@@ -31,6 +31,34 @@ jobs:
       - name: Deploy to Render
         if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
         run: echo "Deploying to Render..."
+      - name: Notify Discord on deployment success
+        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') && success() }}
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: success
+          title: Deployment succeeded
+          content: |
+            Deployment finished successfully.
+            Repository: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref_name }}
+            Actor: ${{ github.actor }}
+      - name: Notify Discord on build failure
+        if: ${{ failure() }}
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: failure
+          title: Build failed
+          content: |
+            The workflow failed.
+            Repository: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref_name }}
+            Actor: ${{ github.actor }}
+            Event: ${{ github.event_name }}
+            Workflow: ${{ github.workflow }}
 
   tag_release:
     needs: [simple_deployment_pipeline]
