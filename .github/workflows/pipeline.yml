@@ -4,64 +4,73 @@ on:
   push:
     branches: [main]
   pull_request:
-    # Run checks for pull requests targeting the main branch
     branches: [main]
     types: [opened, synchronize]
 
 jobs:
-  simple_deployment_pipeline:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
       - name: Install dependencies
         run: npm install
       - name: Check style
         run: npm run eslint
+
+  test:
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
       - name: Test
         run: npm test
+
+  e2e:
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
       - name: E2E Test
         run: npm run test:e2e
+
+  build:
+    needs: [lint]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        run: npm install
       - name: Build
         run: npm run build
+
+  deploy:
+    needs: [test, e2e, build]
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to Render
-        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
-        run: echo "Deploying to Render..."
-      - name: Notify Discord on deployment success
-        if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') && success() }}
-        uses: sarisia/actions-status-discord@v1
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: success
-          title: Deployment succeeded
-          content: |
-            Deployment finished successfully.
-            Repository: ${{ github.repository }}
-            Commit: ${{ github.sha }}
-            Branch: ${{ github.ref_name }}
-            Actor: ${{ github.actor }}
-      - name: Notify Discord on build failure
-        if: ${{ failure() }}
-        uses: sarisia/actions-status-discord@v1
-        with:
-          webhook: ${{ secrets.DISCORD_WEBHOOK }}
-          status: failure
-          title: Build failed
-          content: |
-            The workflow failed.
-            Repository: ${{ github.repository }}
-            Commit: ${{ github.sha }}
-            Branch: ${{ github.ref_name }}
-            Actor: ${{ github.actor }}
-            Event: ${{ github.event_name }}
-            Workflow: ${{ github.workflow }}
+        run: echo 'Deploying to Render...'
 
   tag_release:
-    needs: [simple_deployment_pipeline]
+    needs: [deploy]
     if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') }}
     runs-on: ubuntu-latest
     permissions:
@@ -76,3 +85,41 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DEFAULT_BUMP: patch
+
+  notify_success:
+    needs: [deploy, tag_release]
+    if: ${{ github.event_name == 'push' && !contains(join(github.event.commits.*.message, ' '), '#skip') && success() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord on deployment success
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: success
+          title: Deployment succeeded
+          content: |
+            Deployment finished successfully.
+            Repository: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref_name }}
+            Actor: ${{ github.actor }}
+
+  notify_failure:
+    needs: [lint, test, e2e, build, deploy, tag_release]
+    if: ${{ failure() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Discord on build failure
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ secrets.DISCORD_WEBHOOK }}
+          status: failure
+          title: Build failed
+          content: |
+            The workflow failed.
+            Repository: ${{ github.repository }}
+            Commit: ${{ github.sha }}
+            Branch: ${{ github.ref_name }}
+            Actor: ${{ github.actor }}
+            Event: ${{ github.event_name }}
+            Workflow: ${{ github.workflow }}
