@@ -14,3 +14,6 @@ Start by running `npm install` inside the project folder
 
 ## Live Demo
 Check out the deployed Pokedex application here: https://fullstack-open-part11-pokedex.onrender.com
+
+## Deployment pipeline and branch protection
+This project uses a GitHub Actions pipeline for linting, testing, building, and deployment. Changes are merged through pull requests and protected checks on the main branch.
