@@ -1,14 +1,13 @@
-name: "Periodic health check"
+name: Periodic health check
 
 on:
-  workflow_dispatch: {}
+  workflow_dispatch:
   schedule:
-    - cron: "*/15 * * * *"
-      - name: Health check (curl)
-        run: |
-          curl --fail https://fullstack-open-part11-pokedex.onrender.com/health
-        uses: jkheadley/url-health-check@v1.5.0
-        with:
-          url: "https://fullstack-open-part11-pokedex.onrender.com/health"
-          max-retries: 3
-          retry-delay: "5s"
+    - cron: '*/15 * * * *'
+
+jobs:
+  health_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        run: curl --fail https://fullstack-open-part11-pokedex.onrender.com/health
