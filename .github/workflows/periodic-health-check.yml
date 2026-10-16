@@ -1,0 +1,17 @@
+name: "Periodic health check"
+
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "*/15 * * * *"
+
+jobs:
+  health_check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health check
+        uses: jkheadley/url-health-check@v1.5.0
+        with:
+          url: "https://fullstack-open-part11-pokedex.onrender.com/health"
+          max-retries: 3
+          retry-delay: "5s"
